@@ -1,0 +1,4 @@
+name: WinAntiProxy
+version: '${project.version}'
+main: im.aronpaul.winantiproxy.WinAntiProxy
+api-version: '1.16'

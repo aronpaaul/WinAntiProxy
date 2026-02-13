@@ -1,0 +1,123 @@
+proxy:
+  # Действие при детекте: HUB или KICK
+  # HUB - перемещает игрока в указанный сервер (hub-server
+  # примечание... сервер должен находится в списке
+  # серверов Velocity
+  #
+  # KICK - обычный кик игрока
+  # от Bukkit.
+  action: "HUB"
+  # Название сервера лобби в Velocity/Bungee
+  hub-server: "hub"
+  # Сообщение при кике и (опционально)
+  message: "&cОтключите VPN или прокси и попробуйте зайти еще раз. Ошибка? Обратитесь сюда - &bt.me/ruawen"
+  # Отправлять сообщение до кика в хаб
+  send-message-before-transfer: true
+  # Проверять на AsyncPlayerPreLoginEvent
+  prelogin-check: true
+  # Дополнительная проверка на входе
+  join-check: true
+  # Если >0, кик через это время, если перевод не сработал
+  hub-fallback-kick-ticks: 0
+
+lists:
+  # Удаленные списки (plain text). Строки могут содержать IP, CIDR или IP:порт
+  sources:
+    - "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt"
+    - "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt"
+    - "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/all/data.txt"
+    - "https://raw.githubusercontent.com/clarketm/proxy-list/refs/heads/master/proxy-list-raw.txt"
+    - "https://raw.githubusercontent.com/fate0/proxylist/refs/heads/master/proxy.list"
+    - "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies.txt"
+    - "https://raw.githubusercontent.com/thenasty1337/free-proxy-list/main/data/latest/proxies.txt"
+    - "https://raw.githubusercontent.com/josephrocca/is-vpn/main/vpn-or-datacenter-ipv4-ranges.txt"
+    - "https://raw.githubusercontent.com/josephrocca/is-vpn/main/vpn-or-datacenter-ipv6-ranges.txt"
+  # Дополнительные локальные записи для блокировки
+  inline: []
+  # Список айпи, которые никогда не заблокируются (игнор лист)
+  bypass-ips:
+    - "127.0.0.1"
+    - "::1"
+
+update:
+  # Включить автообновление удаленных списков прокси (lists.sources)
+  enabled: true
+  # Интервал обновления в секундах
+  interval-seconds: 1800
+  # Таймаут HTTP в миллисекундах
+  request-timeout-ms: 8000
+  # HTTP user-agent
+  user-agent: "WinAntiProxy/1.0"
+
+geoip:
+  # Оффлайн-блок по странам (нужна база GeoLite2-Country.mmdb)
+  enabled: true
+  # Путь к mmdb (абсолютный или относительно папки плагина)
+  mmdb-path: "GeoLite2-Country.mmdb"
+  # Если поиск не удался: пускать (true) или блокировать (false)
+  fail-open: false
+  # Вайтлист стран (ISO2). Если не пусто — все остальные блокируются
+  allow-country-codes:
+    - "RU"
+    - "UA"
+    - "BY"
+    - "KZ"
+    - "UZ"
+    - "KG"
+    - "TJ"
+    - "TM"
+    - "AZ"
+    - "AM"
+    - "GE"
+    - "MD"
+    - "LV"
+    - "LT"
+    - "EE"
+    - "DE"
+    - "PL"
+  # Блоклист стран (ISO2)
+  block-country-codes: []
+
+asn:
+  # Оффлайн ASN/ORG блок (нужна база GeoLite2-ASN.mmdb)
+  enabled: true
+  # Путь к mmdb (абсолютный или относительно папки плагина)
+  mmdb-path: "GeoLite2-ASN.mmdb"
+  # Если поиск не удался: пускать (true) или блокировать (false)
+  fail-open: true
+  # Блокировать ASN
+  block-asn:
+    - 13335
+  # Блок по организации (подстрока, регистр не важен)
+  block-org-contains:
+    - "cloudflare"
+
+# Дополнительный детект прокси (Через готовый API)
+# Детектит - Резидентские прокси, много разновидностей VPN
+intel:
+  # Внешний интеллект IP (proxy/vpn/residential + страна)
+  enabled: false
+  # Провайдер: ipqualityscore или proxycheck
+  provider: "ipqualityscore"
+  # API ключ провайдера
+  api-key: ""
+  # Таймаут запроса в миллисекундах
+  timeout-ms: 4000
+  # TTL кэша в секундах
+  cache-ttl-seconds: 1800
+  # Вызывать провайдера только если не сработали списки
+  check-when-list-miss: true
+  # Если провайдер недоступен — пускать
+  fail-open: true
+  # Что блокировать по данным провайдера
+  block-proxy: true
+  block-vpn: true
+  block-tor: true
+  block-hosting: false
+  block-residential-proxy: true
+  # Для IPQualityScore: блокировать при fraud_score >= этому значению (0 чтобы отключить)
+  min-fraud-score: 0
+  # Вайтлист стран (ISO2). Если не пусто — только эти разрешены
+  allow-country-codes: []
+  # Блоклист стран (ISO2)
+  block-country-codes: []

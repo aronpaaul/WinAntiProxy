@@ -23,14 +23,18 @@ public final class IntelService {
     private static final Pattern PROXYCHECK_STATUS = Pattern.compile("\"status\"\\s*:\\s*\"([^\"]+)\"");
     private static final Pattern PROXYCHECK_PROXY_STR = Pattern.compile("\"proxy\"\\s*:\\s*\"(yes|no)\"");
     private static final Pattern PROXYCHECK_PROXY_BOOL = Pattern.compile("\"proxy\"\\s*:\\s*(true|false)");
+    private static final Pattern PROXYCHECK_ANON_STR = Pattern.compile("\"anonymous\"\\s*:\\s*\"(yes|no)\"");
+    private static final Pattern PROXYCHECK_ANON_BOOL = Pattern.compile("\"anonymous\"\\s*:\\s*(true|false)");
     private static final Pattern PROXYCHECK_VPN_STR = Pattern.compile("\"vpn\"\\s*:\\s*\"(yes|no)\"");
     private static final Pattern PROXYCHECK_VPN_BOOL = Pattern.compile("\"vpn\"\\s*:\\s*(true|false)");
+    private static final Pattern PROXYCHECK_TOR_STR = Pattern.compile("\"tor\"\\s*:\\s*\"(yes|no)\"");
     private static final Pattern PROXYCHECK_TOR_BOOL = Pattern.compile("\"tor\"\\s*:\\s*(true|false)");
+    private static final Pattern PROXYCHECK_HOSTING_STR = Pattern.compile("\"hosting\"\\s*:\\s*\"(yes|no)\"");
     private static final Pattern PROXYCHECK_HOSTING_BOOL = Pattern.compile("\"hosting\"\\s*:\\s*(true|false)");
     private static final Pattern PROXYCHECK_NETWORK_TYPE = Pattern.compile("\"network\"\\s*:\\s*\\{.*?\"type\"\\s*:\\s*\"([^\"]+)\"", Pattern.DOTALL);
     private static final Pattern PROXYCHECK_COUNTRY = Pattern.compile("\"country_code\"\\s*:\\s*\"([A-Za-z]{2})\"");
     private static final Pattern PROXYCHECK_ISO = Pattern.compile("\"isocode\"\\s*:\\s*\"([A-Za-z]{2})\"");
-    private static final Pattern PROXYCHECK_RISK = Pattern.compile("\"risk\"\\s*:\\s*(\\d+)");
+    private static final Pattern PROXYCHECK_RISK = Pattern.compile("\"risk\"\\s*:\\s*\"?(\\d+)\"?");
 
     private static final Pattern IPQS_SUCCESS = Pattern.compile("\"success\"\\s*:\\s*(true|false)");
     private static final Pattern IPQS_PROXY = Pattern.compile("\"proxy\"\\s*:\\s*(true|false)");
@@ -91,25 +95,49 @@ public final class IntelService {
         String ip = address.getHostAddress();
         String key = config.getIntel().getApiKey();
         StringBuilder url = new StringBuilder("https://proxycheck.io/v3/");
-        url.append(ip).append("?vpn=1&asn=1&risk=1");
-        if (key != null && !key.trim().isEmpty()) {
-            url.append("&key=").append(URLEncoder.encode(key.trim(), "UTF-8"));
+        url.append(URLEncoder.encode(ip, "UTF-8"));
+        boolean hasQuery = false;
+
+        String apiKey = trimToNull(key);
+        if (apiKey != null) {
+            hasQuery = appendQueryParam(url, hasQuery, "key", apiKey);
         }
+        double days = config.getIntel().getProxycheckDays();
+        if (days > 0.0D) {
+            hasQuery = appendQueryParam(url, hasQuery, "days", formatDays(days));
+        }
+        String tag = trimToNull(config.getIntel().getProxycheckTag());
+        if (tag != null) {
+            hasQuery = appendQueryParam(url, hasQuery, "tag", tag);
+        }
+        String version = trimToNull(config.getIntel().getProxycheckVersion());
+        if (version != null) {
+            hasQuery = appendQueryParam(url, hasQuery, "ver", version);
+        }
+        if (config.getIntel().isProxycheckNode()) {
+            hasQuery = appendQueryParam(url, hasQuery, "node", "1");
+        }
+        if (config.getIntel().isProxycheckShort()) {
+            hasQuery = appendQueryParam(url, hasQuery, "short", "1");
+        }
+
         String json = fetch(url.toString());
         String status = findString(PROXYCHECK_STATUS, json);
-        if (status == null || !status.equalsIgnoreCase("ok")) {
+        if (status == null || !(status.equalsIgnoreCase("ok") || status.equalsIgnoreCase("warning"))) {
             return IntelResult.failed();
         }
-        boolean proxy = findBooleanAny(json, PROXYCHECK_PROXY_BOOL, PROXYCHECK_PROXY_STR);
+        boolean proxy = findBooleanAny(json, PROXYCHECK_PROXY_BOOL, PROXYCHECK_PROXY_STR, PROXYCHECK_ANON_BOOL, PROXYCHECK_ANON_STR);
         boolean vpn = findBooleanAny(json, PROXYCHECK_VPN_BOOL, PROXYCHECK_VPN_STR);
-        boolean tor = findBooleanAny(json, PROXYCHECK_TOR_BOOL);
-        boolean hosting = findBooleanAny(json, PROXYCHECK_HOSTING_BOOL);
+        boolean tor = findBooleanAny(json, PROXYCHECK_TOR_BOOL, PROXYCHECK_TOR_STR);
+        boolean hosting = findBooleanAny(json, PROXYCHECK_HOSTING_BOOL, PROXYCHECK_HOSTING_STR);
         String networkType = findString(PROXYCHECK_NETWORK_TYPE, json);
         String typeLower = networkType != null ? networkType.toLowerCase(Locale.ROOT) : "";
         if (!hosting) {
             hosting = typeLower.contains("hosting") || typeLower.contains("datacenter") || typeLower.contains("data center");
         }
-        boolean residential = proxy && (typeLower.contains("residential") || typeLower.contains("mobile"));
+        boolean residential = proxy && (typeLower.contains("residential")
+                || typeLower.contains("mobile")
+                || typeLower.contains("wireless"));
         int risk = findInt(PROXYCHECK_RISK, json);
         String country = findString(PROXYCHECK_COUNTRY, json);
         if (country == null) {
@@ -215,6 +243,32 @@ public final class IntelService {
         } catch (NumberFormatException ex) {
             return 0;
         }
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static boolean appendQueryParam(StringBuilder url, boolean hasQuery, String key, String value) throws Exception {
+        url.append(hasQuery ? "&" : "?");
+        url.append(key).append("=").append(URLEncoder.encode(value, "UTF-8"));
+        return true;
+    }
+
+    private static String formatDays(double days) {
+        long rounded = Math.round(days);
+        if (Math.abs(days - rounded) < 0.0000001D) {
+            return Long.toString(rounded);
+        }
+        String formatted = String.format(Locale.US, "%.2f", days);
+        while (formatted.contains(".") && (formatted.endsWith("0") || formatted.endsWith("."))) {
+            formatted = formatted.substring(0, formatted.length() - 1);
+        }
+        return formatted;
     }
 
     private static String uppercase(String value) {

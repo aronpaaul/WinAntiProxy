@@ -60,8 +60,14 @@ asn:
 
 intel:
   enabled: false
-  provider: "ipqualityscore"
-  api-key: ""
+  provider: "proxycheck"
+  api-key: "YOUR_PROXYCHECK_KEY"
+  proxycheck:
+    days: 7
+    tag: "minecraft-login"
+    version: ""
+    include-node: false
+    short-response: false
 ```
 
 ## Как работает детект
@@ -74,6 +80,8 @@ intel:
 ## Внешний интеллект (опционально)
 Поддерживаются:
 - IPQualityScore (IPQS)
-- ProxyCheck
+- ProxyCheck.io (v3 API)
 
 Включается через `intel.enabled: true` и `intel.api-key`.
+Для ProxyCheck доступны дополнительные параметры в `intel.proxycheck.*` (`days`, `tag`, `version`, `include-node`, `short-response`).
+Документация ProxyCheck API: https://proxycheck.io/api/

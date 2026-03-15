@@ -61,7 +61,7 @@ public final class Settings {
         boolean updateEnabled = cfg.getBoolean("update.enabled", true);
         int updateIntervalSeconds = Math.max(60, cfg.getInt("update.interval-seconds", 1800));
         int timeoutMs = Math.max(1000, cfg.getInt("update.request-timeout-ms", 8000));
-        String userAgent = cfg.getString("update.user-agent", "WinAntiProxy/1.0");
+        String userAgent = cfg.getString("update.user-agent", "WinAntiProxy/1.0.1");
         UpdateSettings update = new UpdateSettings(updateEnabled, updateIntervalSeconds, timeoutMs, userAgent);
 
         boolean intelEnabled = cfg.getBoolean("intel.enabled", false);
@@ -79,9 +79,20 @@ public final class Settings {
         int minFraudScore = Math.max(0, cfg.getInt("intel.min-fraud-score", 0));
         Set<String> allowCountryCodes = ConfigParsers.parseCountryCodes(cfg.getStringList("intel.allow-country-codes"));
         Set<String> blockCountryCodes = ConfigParsers.parseCountryCodes(cfg.getStringList("intel.block-country-codes"));
+        double proxycheckDays = cfg.getDouble("intel.proxycheck.days", 7.0D);
+        if (proxycheckDays < 0.01D) {
+            proxycheckDays = 0.0D;
+        } else if (proxycheckDays > 60.0D) {
+            proxycheckDays = 60.0D;
+        }
+        String proxycheckTag = cfg.getString("intel.proxycheck.tag", "");
+        String proxycheckVersion = cfg.getString("intel.proxycheck.version", "");
+        boolean proxycheckNode = cfg.getBoolean("intel.proxycheck.include-node", false);
+        boolean proxycheckShort = cfg.getBoolean("intel.proxycheck.short-response", false);
         IntelSettings intel = new IntelSettings(intelEnabled, intelProvider, intelApiKey, intelTimeoutMs,
                 intelCacheTtlSeconds, intelCheckWhenListMiss, intelFailOpen, blockProxy, blockVpn, blockTor,
-                blockHosting, blockResidentialProxy, minFraudScore, allowCountryCodes, blockCountryCodes);
+                blockHosting, blockResidentialProxy, minFraudScore, allowCountryCodes, blockCountryCodes,
+                proxycheckDays, proxycheckTag, proxycheckVersion, proxycheckNode, proxycheckShort);
 
         boolean geoipEnabled = cfg.getBoolean("geoip.enabled", false);
         String geoipMmdbPath = cfg.getString("geoip.mmdb-path", "GeoLite2-Country.mmdb");

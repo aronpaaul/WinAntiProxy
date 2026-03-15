@@ -4,7 +4,7 @@
   <groupId>im.aronpaul</groupId>
   <artifactId>WinAntiProxy</artifactId>
   <name>WinAntiProxy</name>
-  <version>1</version>
+  <version>1.0.1</version>
   <build>
     <resources>
       <resource>

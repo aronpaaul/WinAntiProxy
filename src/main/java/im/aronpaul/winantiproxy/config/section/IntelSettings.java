@@ -19,6 +19,11 @@ public final class IntelSettings {
     private final int minFraudScore;
     private final Set<String> allowCountryCodes;
     private final Set<String> blockCountryCodes;
+    private final double proxycheckDays;
+    private final String proxycheckTag;
+    private final String proxycheckVersion;
+    private final boolean proxycheckNode;
+    private final boolean proxycheckShort;
 
     public IntelSettings(boolean enabled,
                          String provider,
@@ -34,7 +39,12 @@ public final class IntelSettings {
                          boolean blockResidentialProxy,
                          int minFraudScore,
                          Set<String> allowCountryCodes,
-                         Set<String> blockCountryCodes) {
+                         Set<String> blockCountryCodes,
+                         double proxycheckDays,
+                         String proxycheckTag,
+                         String proxycheckVersion,
+                         boolean proxycheckNode,
+                         boolean proxycheckShort) {
         this.enabled = enabled;
         this.provider = provider;
         this.apiKey = apiKey;
@@ -50,6 +60,11 @@ public final class IntelSettings {
         this.minFraudScore = minFraudScore;
         this.allowCountryCodes = allowCountryCodes;
         this.blockCountryCodes = blockCountryCodes;
+        this.proxycheckDays = proxycheckDays;
+        this.proxycheckTag = proxycheckTag;
+        this.proxycheckVersion = proxycheckVersion;
+        this.proxycheckNode = proxycheckNode;
+        this.proxycheckShort = proxycheckShort;
     }
 
     public boolean isEnabled() {
@@ -110,5 +125,25 @@ public final class IntelSettings {
 
     public Set<String> getBlockCountryCodes() {
         return blockCountryCodes;
+    }
+
+    public double getProxycheckDays() {
+        return proxycheckDays;
+    }
+
+    public String getProxycheckTag() {
+        return proxycheckTag;
+    }
+
+    public String getProxycheckVersion() {
+        return proxycheckVersion;
+    }
+
+    public boolean isProxycheckNode() {
+        return proxycheckNode;
+    }
+
+    public boolean isProxycheckShort() {
+        return proxycheckShort;
     }
 }

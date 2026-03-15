@@ -47,7 +47,7 @@ update:
   # Таймаут HTTP в миллисекундах
   request-timeout-ms: 8000
   # HTTP user-agent
-  user-agent: "WinAntiProxy/1.0"
+  user-agent: "WinAntiProxy/1.0.1"
 
 geoip:
   # Оффлайн-блок по странам (нужна база GeoLite2-Country.mmdb)
@@ -101,6 +101,18 @@ intel:
   provider: "ipqualityscore"
   # API ключ провайдера
   api-key: ""
+  # ProxyCheck.io v3 настройки (используются только при provider=proxycheck)
+  proxycheck:
+    # 0 отключает days-фильтр. Допустимый диапазон: 0.01 .. 60
+    days: 7
+    # Необязательный тег для логов в Dashboard. "0" отключает логирование
+    tag: ""
+    # Необязательная фиксированная версия API (пример: "11-February-2026")
+    version: ""
+    # Возвращать имя ноды в ответе (нужно в основном для диагностики)
+    include-node: false
+    # Сжатый формат ответа (только для single-address запросов)
+    short-response: false
   # Таймаут запроса в миллисекундах
   timeout-ms: 4000
   # TTL кэша в секундах
